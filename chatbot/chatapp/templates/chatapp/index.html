@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot</title>
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .chat {
+            width: 400px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            padding: 20px;
+        }
+        .chat-screen {
+            padding: 20px;
+        }
+        #messages {
+            height: 300px;
+            overflow-y: auto;
+            padding: 10px;
+            outline:#1e1b1b;
+            border-bottom: 1px solid #ddd;
+        }
+        #messages p {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 8px;
+            animation: slideIn 0.5s;
+        }
+        #messages p:nth-child(odd) {
+            background-color: #e6f7ff;
+        }
+        #messages p:nth-child(even) {
+            background-color: #f1f1f1;
+            text-align: right;
+        }
+        .input-area {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+        .input-area input[type="text"] {
+            width: calc(100% - 100px);
+            padding: 10px;
+            border: none;
+            outline: none;
+        }
+        .input-area button {
+            width: 100px;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-size: 18px;
+            border-radius: 8px;
+        }
+        .input-area button:hover {
+            background-color: #0056b3;
+        }
+        @keyframes slideIn {
+            0% {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat">
+        <div class="chat-screen">
+            <div class="header">
+                EhsanBot
+            </div>
+            <div id="messages"></div>
+            <div class="input-area">
+                <input type="text" id="user_input" placeholder="Type a message..." />
+                <button onclick="sendMessage()">
+                    Send
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function sendMessage() {
+            const userInput = document.getElementById('user_input').value;
+            if (userInput.trim() === "") return;
+
+            const messages = document.getElementById('messages');
+            messages.innerHTML += `<p class="user-message">You: ${userInput}</p>`;
+
+            fetch('/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ message: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                messages.innerHTML += `<p class="bot-response">${data.response}</p>`;
+                messages.scrollTop = messages.scrollHeight;
+            })
+            .catch(error => console.error('Error:', error));
+
+            document.getElementById('user_input').value = '';
+        }
+    </script>
+</body>
+
+</html>
